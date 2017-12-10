@@ -34,15 +34,16 @@ var authCtr controller.AuthController
 
 // init function
 func init() {
-
+	if courierCtr == nil {
+		courierCtr = controller.NewCourierController()
+	}
+	if authCtr == nil {
+		authCtr = controller.NewAuthController()
+	}
 }
 
 // ShowProfile will show profile data
 func ShowProfile(ctx *gin.Context) {
-	if courierCtr == nil {
-		courierCtr = controller.NewCourierController()
-	}
-
 	//page, limit, token is not used
 	_, _, _ = handler.GetDefaultParam(ctx)
 
@@ -63,14 +64,8 @@ func ShowProfile(ctx *gin.Context) {
 
 // UpdateProfile will update profile
 func UpdateProfile(ctx *gin.Context) {
-	if courierCtr == nil {
-		courierCtr = controller.NewCourierController()
-	}
-	if authCtr == nil {
-		authCtr = controller.NewAuthController()
-	}
-
-	token := ctx.GetHeader("token")
+	//page, limit is not used
+	_, _, token := handler.GetDefaultParam(ctx)
 	if token == "" {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "bad token request"})
 		return
@@ -140,14 +135,8 @@ func UpdateProfile(ctx *gin.Context) {
 
 // UpdateLocation will update location data
 func UpdateLocation(ctx *gin.Context) {
-	if courierCtr == nil {
-		courierCtr = controller.NewCourierController()
-	}
-	if authCtr == nil {
-		authCtr = controller.NewAuthController()
-	}
-
-	token := ctx.GetHeader("token")
+	// page, limit is not used
+	_, _, token := handler.GetDefaultParam(ctx)
 	if token == "" {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "bad token request"})
 		return

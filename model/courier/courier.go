@@ -98,13 +98,13 @@ func (c *Courier) Insert(courier Courier, tx *sqlx.Tx) (err error) {
 	}
 
 	query := "INSERT INTO courier (username,password,name,phone,email,create_by,create_time) VALUES ($1,$2,$3,$4,$5,$6,$7)"
-	query = db.Rebind(query)
-	db.MustExec(query, courier.Username, courier.Password, courier.Name, courier.Phone, courier.Email, courier.CreateBy, courier.CreateTime)
+	query = tx.Rebind(query)
+	tx.MustExec(query, courier.Username, courier.Password, courier.Name, courier.Phone, courier.Email, courier.CreateBy, courier.CreateTime)
 
 	if commitNow {
 		err = tx.Commit()
 		if err != nil {
-			log.Printf("[Courier][Insert] Error when commit to db : %s \n data : %v ", err, c)
+			log.Printf("[Courier][Insert] Error when commit to db : %s \n data : %v ", err, courier)
 			err = errors.New("error when insert data to courier")
 		}
 	}
@@ -121,13 +121,13 @@ func (c *Courier) UpdateLocation(courier Courier, tx *sqlx.Tx) (err error) {
 	}
 
 	query := "UPDATE courier SET longitude=$1, lattitude=$2, update_position_time=$3 WHERE id=$4"
-	query = db.Rebind(query)
-	db.MustExec(query, courier.Longitude, courier.Lattitude, courier.LocUpdateTime, courier.ID)
+	query = tx.Rebind(query)
+	tx.MustExec(query, courier.Longitude, courier.Lattitude, courier.LocUpdateTime, courier.ID)
 
 	if commitNow {
 		err = tx.Commit()
 		if err != nil {
-			log.Printf("[Courier][UpdateLocation] Error when commit to db : %s \n data : %v ", err, c)
+			log.Printf("[Courier][UpdateLocation] Error when commit to db : %s \n data : %v ", err, courier)
 			err = errors.New("error when update location courier")
 		}
 	}
@@ -144,13 +144,13 @@ func (c *Courier) Update(courier Courier, tx *sqlx.Tx) (err error) {
 	}
 
 	query := "UPDATE courier SET username=$1, password=$2, name=$3, phone=$4, email=$5, update_by=$6, update_time=$7 WHERE id=$8"
-	query = db.Rebind(query)
-	db.MustExec(query, courier.Username, courier.Password, courier.Name, courier.Phone, courier.Email, courier.UpdateBy, courier.UpdateTime, courier.ID)
+	query = tx.Rebind(query)
+	tx.MustExec(query, courier.Username, courier.Password, courier.Name, courier.Phone, courier.Email, courier.UpdateBy, courier.UpdateTime, courier.ID)
 
 	if commitNow {
 		err = tx.Commit()
 		if err != nil {
-			log.Printf("[Courier][Update] Error when commit to db : %s \n data : %v ", err, c)
+			log.Printf("[Courier][Update] Error when commit to db : %s \n data : %v ", err, courier)
 			err = errors.New("error when update data to courier")
 		}
 	}
@@ -167,13 +167,13 @@ func (c *Courier) Remove(courier Courier, tx *sqlx.Tx) (err error) {
 	}
 
 	query := "DELETE FROM courier WHERE id=$1"
-	query = db.Rebind(query)
-	db.MustExec(query, courier.ID)
+	query = tx.Rebind(query)
+	tx.MustExec(query, courier.ID)
 
 	if commitNow {
 		err = tx.Commit()
 		if err != nil {
-			log.Printf("[Courier][Delete] Error when commit to db : %s \n data : %v ", err, c)
+			log.Printf("[Courier][Delete] Error when commit to db : %s \n data : %v ", err, courier)
 			err = errors.New("error when update data to courier")
 		}
 	}

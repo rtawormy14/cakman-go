@@ -53,7 +53,7 @@ func InitRoute(app *gin.Engine) {
 	// Order Routes
 	orderRoute := app.Group("/orders")
 	// get order list
-	orderRoute.GET("/", order.GetOrders)
+	orderRoute.GET("", order.GetOrders)
 	// get order detail
 	orderRoute.GET("/:order_id", order.GetOrderDetail)
 	// add new order
@@ -63,8 +63,10 @@ func InitRoute(app *gin.Engine) {
 
 	// Delivery Order Routes
 	deliveryRoute := app.Group("/deliveries")
-	// get delivery detail
-	deliveryRoute.GET("/:delivery_order_id", delivery.GetDeliveryDetail)
+	// get current delivery list
+	deliveryRoute.GET("/", delivery.GetDeliveryList)
+	// get delivery history
+	deliveryRoute.GET("/history", delivery.GetDeliveryHistory)
 	// add new delivery order
 	deliveryRoute.POST("/:order_id", delivery.AddDelivery)
 	// update delivery order
