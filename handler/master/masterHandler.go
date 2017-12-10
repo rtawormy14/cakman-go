@@ -9,11 +9,15 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/rtawormy14/cakman-go/controller"
+
 	"github.com/rtawormy14/cakman-go/handler"
 	"github.com/rtawormy14/cakman-go/model/city"
 	"github.com/rtawormy14/cakman-go/model/country"
 	"github.com/rtawormy14/cakman-go/model/province"
 )
+
+var master controller.MasterController
 
 // init function
 func init() {
@@ -21,7 +25,9 @@ func init() {
 }
 
 func GetCountries(ctx *gin.Context) {
-
+	if master == nil {
+		master = controller.NewMasterController()
+	}
 	//token is not used
 	page, limit, _ := handler.GetDefaultParam(ctx)
 
@@ -30,8 +36,7 @@ func GetCountries(ctx *gin.Context) {
 		Name: pName,
 	}
 
-	country := country.New()
-	countries, err := country.GetCountryList(page, limit, filter)
+	countries, err := master.GetCountryList(page, limit, filter)
 	if err != nil {
 		log.Println(err)
 	}
@@ -44,13 +49,17 @@ func GetCountries(ctx *gin.Context) {
 }
 
 func GetCountryByCode(ctx *gin.Context) {
+	if master == nil {
+		master = controller.NewMasterController()
+	}
+
 	//page, limit, token is not used
 	_, _, _ = handler.GetDefaultParam(ctx)
 
 	pCode := ctx.Param("country_code")
 	code, _ := strconv.ParseInt(pCode, 10, 64)
 
-	country, err := country.GetCountry(code)
+	country, err := master.GetCountry(code)
 	if err != nil {
 		log.Println(err)
 	}
@@ -63,6 +72,9 @@ func GetCountryByCode(ctx *gin.Context) {
 }
 
 func GetProvinces(ctx *gin.Context) {
+	if master == nil {
+		master = controller.NewMasterController()
+	}
 	//token is not used
 	page, limit, _ := handler.GetDefaultParam(ctx)
 
@@ -74,8 +86,7 @@ func GetProvinces(ctx *gin.Context) {
 		Name:        pName,
 	}
 
-	province := province.New()
-	provinces, err := province.GetProvinceList(page, limit, filter)
+	provinces, err := master.GetProvinceList(page, limit, filter)
 	if err != nil {
 		log.Println(err)
 	}
@@ -88,6 +99,10 @@ func GetProvinces(ctx *gin.Context) {
 }
 
 func GetProvinceByCode(ctx *gin.Context) {
+	if master == nil {
+		master = controller.NewMasterController()
+	}
+
 	//page, limit, token is not used
 	_, _, _ = handler.GetDefaultParam(ctx)
 
@@ -96,7 +111,7 @@ func GetProvinceByCode(ctx *gin.Context) {
 	pCode := ctx.Param("province_code")
 	code, _ := strconv.ParseInt(pCode, 10, 64)
 
-	province, err := province.GetProvince(code)
+	province, err := master.GetProvince(code)
 	if err != nil {
 		log.Println(err)
 	}
@@ -109,6 +124,10 @@ func GetProvinceByCode(ctx *gin.Context) {
 }
 
 func GetCities(ctx *gin.Context) {
+	if master == nil {
+		master = controller.NewMasterController()
+	}
+
 	//token is not used
 	page, limit, _ := handler.GetDefaultParam(ctx)
 
@@ -120,8 +139,7 @@ func GetCities(ctx *gin.Context) {
 		Name:         pName,
 	}
 
-	city := city.New()
-	cities, err := city.GetCityList(page, limit, filter)
+	cities, err := master.GetCityList(page, limit, filter)
 	if err != nil {
 		log.Println(err)
 	}
@@ -136,6 +154,9 @@ func GetCities(ctx *gin.Context) {
 }
 
 func GetCityByCode(ctx *gin.Context) {
+	if master == nil {
+		master = controller.NewMasterController()
+	}
 	//page, limit, token is not used
 	_, _, _ = handler.GetDefaultParam(ctx)
 
@@ -144,7 +165,7 @@ func GetCityByCode(ctx *gin.Context) {
 	pCode := ctx.Param("city_code")
 	code, _ := strconv.ParseInt(pCode, 10, 64)
 
-	city, err := city.GetCity(code)
+	city, err := master.GetCity(code)
 	if err != nil {
 		log.Println(err)
 	}

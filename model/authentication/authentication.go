@@ -32,8 +32,8 @@ type Authentication struct {
 	CreateTime time.Time `db:"create_time" json:"create_time"`
 }
 
-// NewAuthenticator is ...
-func NewAuthenticator() Authenticator {
+// NewAuthentication is ...
+func NewAuthentication() Authenticator {
 	return &Authentication{}
 }
 
@@ -49,7 +49,8 @@ func (a *Authentication) GetAuthentication(id int64) (auth Authentication, err e
 	var queryBuffer bytes.Buffer
 	queryBuffer.WriteString("SELECT id, courier_id, token, create_time, expire_time FROM session WHERE id = $1 LIMIT 1")
 
-	err = db.Get(&auth, queryBuffer.String(), id)
+	query := db.Rebind(queryBuffer.String())
+	err = db.Get(&auth, query, id)
 	if err != nil && err != sql.ErrNoRows {
 		log.Printf("[Authentication][GetAuthentication] error while querying : \n %v \n %v", queryBuffer.String(), err)
 	}
@@ -70,7 +71,8 @@ func (a *Authentication) GetAuthenticationByToken(token string) (auth Authentica
 	var queryBuffer bytes.Buffer
 	queryBuffer.WriteString("SELECT id, courier_id, token, create_time, expire_time FROM session WHERE token = $1 LIMIT 1")
 
-	err = db.Get(&auth, queryBuffer.String(), token)
+	query := db.Rebind(queryBuffer.String())
+	err = db.Get(&auth, query, token)
 	if err != nil && err != sql.ErrNoRows {
 		log.Printf("[Authentication][GetAuthenticationByToken] error while querying : \n %v \n %v", queryBuffer.String(), err)
 	}
@@ -90,6 +92,7 @@ func (a *Authentication) Insert(auth Authentication, tx *sqlx.Tx) (err error) {
 	}
 
 	query := "INSERT INTO session (courier_id, token, expire_time, create_time) VALUES ($1,$2,$3,$4)"
+	query = db.Rebind(query)
 	db.MustExec(query, auth.CourierID, auth.Token, auth.ExpireTime, auth.CreateTime)
 
 	if commitNow {
@@ -112,6 +115,7 @@ func (a *Authentication) Update(auth Authentication, tx *sqlx.Tx) (err error) {
 	}
 
 	query := "UPDATE session SET courier_id = $1, token = $2, expire_time = $3, create_time = $4 WHERE id = $5"
+	query = db.Rebind(query)
 	db.MustExec(query, auth.CourierID, auth.Token, auth.ExpireTime, auth.CreateTime, auth.ID)
 
 	if commitNow {
@@ -134,6 +138,7 @@ func (a *Authentication) Remove(auth Authentication, tx *sqlx.Tx) (err error) {
 	}
 
 	query := "DELETE FROM session WHERE id = $1"
+	query = db.Rebind(query)
 	db.MustExec(query, auth.ID)
 
 	if commitNow {

@@ -2,6 +2,7 @@ package country
 
 import (
 	"bytes"
+	"database/sql"
 	"errors"
 	"log"
 
@@ -14,11 +15,11 @@ import (
 
 // Countrier is interface for Country
 type Countrier interface {
-	GetCountry(int64)
-	GetCountryList(int64, int64, Country)
-	Update(Country, *sqlx.Stmt)
-	Insert(Country, *sqlx.Stmt)
-	Remove(Country, *sqlx.Stmt)
+	GetCountry(int64) (Country, error)
+	GetCountryList(int64, int64, Country) ([]Country, error)
+	Update(*sqlx.Tx) error
+	Insert(*sqlx.Tx) error
+	Remove(*sqlx.Tx) error
 }
 
 // Country is data struct for Country
@@ -28,12 +29,12 @@ type Country struct {
 }
 
 // New Country
-func New() Country {
-	return Country{}
+func NewCountry() Countrier {
+	return &Country{}
 }
 
 // Get Country Object
-func GetCountry(code int64) (country Country, err error) {
+func (c *Country) GetCountry(code int64) (country Country, err error) {
 	db := database.DB
 
 	//validate parameter
@@ -44,8 +45,9 @@ func GetCountry(code int64) (country Country, err error) {
 	var queryBuffer bytes.Buffer
 	queryBuffer.WriteString("SELECT country_code, country_name FROM country WHERE country_code = $1 LIMIT 1")
 
-	err = db.Get(&country, queryBuffer.String(), code)
-	if err != nil {
+	query := db.Rebind(queryBuffer.String())
+	err = db.Get(&country, query, code)
+	if err != nil && err != sql.ErrNoRows {
 		log.Printf("[Country][GetCountry] error while querying : \n %v \n %v", queryBuffer.String(), err)
 	}
 	return
@@ -53,7 +55,7 @@ func GetCountry(code int64) (country Country, err error) {
 
 // GetCountryList will return list of country.
 // Default page = 0. Default limit = no-limit.
-func (p *Country) GetCountryList(page, limit int64, filter Country) (countries []Country, err error) {
+func (c *Country) GetCountryList(page, limit int64, filter Country) (countries []Country, err error) {
 	db := database.DB
 	countries = make([]Country, 0)
 
@@ -62,26 +64,31 @@ func (p *Country) GetCountryList(page, limit int64, filter Country) (countries [
 
 	if limit > 0 {
 		queryBuffer.WriteString("OFFSET $2 LIMIT $3")
-		err = db.Select(&countries, queryBuffer.String(), filter.Name, page, limit)
+		query := db.Rebind(queryBuffer.String())
+		err = db.Select(&countries, query, filter.Name, page, limit)
 	} else {
-		err = db.Select(&countries, queryBuffer.String(), filter.Name)
+		query := db.Rebind(queryBuffer.String())
+		err = db.Select(&countries, query, filter.Name)
 	}
 
-	if err != nil {
+	if err != nil && err != sql.ErrNoRows {
 		log.Printf("[Country][GetCountryList] error while querying : \n %v \n %v", queryBuffer.String(), err)
 	}
 	return
 
 }
 
-func (p *Country) Update(country Country, tx *sqlx.Stmt) error {
+// Update is ...
+func (c *Country) Update(tx *sqlx.Tx) error {
 	return nil
 }
 
-func (p *Country) Insert(country Country, tx *sqlx.Stmt) error {
+// Insert is ...
+func (c *Country) Insert(tx *sqlx.Tx) error {
 	return nil
 }
 
-func (p *Country) Remove(country Country, tx *sqlx.Stmt) error {
+// Remove is ...
+func (c *Country) Remove(tx *sqlx.Tx) error {
 	return nil
 }

@@ -2,6 +2,7 @@ package city
 
 import (
 	"bytes"
+	"database/sql"
 	"errors"
 	"log"
 
@@ -13,11 +14,11 @@ import (
 
 // Citier interface
 type Citier interface {
-	GetCity(int64)
-	GetCityList(int64, int64, City)
-	Update(City, *sqlx.Stmt)
-	Insert(City, *sqlx.Stmt)
-	Remove(City, *sqlx.Stmt)
+	GetCity(int64) (City, error)
+	GetCityList(int64, int64, City) ([]City, error)
+	Update(*sqlx.Tx) error
+	Insert(*sqlx.Tx) error
+	Remove(*sqlx.Tx) error
 }
 
 // City struct
@@ -28,12 +29,12 @@ type City struct {
 }
 
 // New City
-func New() City {
-	return City{}
+func NewCity() Citier {
+	return &City{}
 }
 
 // GetCity will return city object if exist
-func GetCity(code int64) (city City, err error) {
+func (p *City) GetCity(code int64) (city City, err error) {
 	db := database.DB
 
 	//validate parameter
@@ -44,14 +45,15 @@ func GetCity(code int64) (city City, err error) {
 	var queryBuffer bytes.Buffer
 	queryBuffer.WriteString("SELECT city_code, city_name FROM city WHERE city_code = $1 LIMIT 1")
 
-	err = db.Get(&city, queryBuffer.String(), code)
-	if err != nil {
+	query := db.Rebind(queryBuffer.String())
+	err = db.Get(&city, query, code)
+	if err != nil && err != sql.ErrNoRows {
 		log.Printf("[City][GetCity] error while querying : \n %v \n %v", queryBuffer.String(), err)
 	}
 	return
 }
 
-// GetCityList will return a list of city based on parameter defined
+// GetCityList will return a list of city 	based on parameter defined
 func (p *City) GetCityList(page, limit int64, filter City) (cities []City, err error) {
 	db := database.DB
 
@@ -64,28 +66,30 @@ func (p *City) GetCityList(page, limit int64, filter City) (cities []City, err e
 
 	if limit > 0 {
 		queryBuffer.WriteString("OFFSET $3 LIMIT $4")
-		err = db.Select(&cities, queryBuffer.String(), filter.ProvinceCode, filter.Name, page, limit)
+		query := db.Rebind(queryBuffer.String())
+		err = db.Select(&cities, query, filter.ProvinceCode, filter.Name, page, limit)
 	} else {
-		err = db.Select(&cities, queryBuffer.String(), filter.ProvinceCode, filter.Name)
+		query := db.Rebind(queryBuffer.String())
+		err = db.Select(&cities, query, filter.ProvinceCode, filter.Name)
 	}
 
-	if err != nil {
+	if err != nil && err != sql.ErrNoRows {
 		log.Printf("[City][GetCityList] error while querying : \n %v \n %v", queryBuffer.String(), err)
 	}
 	return
 }
 
 // Update will update city data
-func (p *City) Update(city City, tx *sqlx.Stmt) error {
+func (p *City) Update(tx *sqlx.Tx) error {
 	return nil
 }
 
 // Insert will insert city data
-func (p *City) Insert(city City, tx *sqlx.Stmt) error {
+func (p *City) Insert(tx *sqlx.Tx) error {
 	return nil
 }
 
 // Remove will remove city data
-func (p *City) Remove(city City, tx *sqlx.Stmt) error {
+func (p *City) Remove(tx *sqlx.Tx) error {
 	return nil
 }

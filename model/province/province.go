@@ -2,6 +2,7 @@ package province
 
 import (
 	"bytes"
+	"database/sql"
 	"errors"
 	"log"
 
@@ -13,11 +14,11 @@ import (
 
 // Provincer is Interface for province
 type Provincer interface {
-	GetProvince(int64)
-	GetProvinceList(int64, int64, Province)
-	Update(Province, *sqlx.Stmt)
-	Insert(Province, *sqlx.Stmt)
-	Remove(Province, *sqlx.Stmt)
+	GetProvince(int64) (Province, error)
+	GetProvinceList(int64, int64, Province) ([]Province, error)
+	Update(*sqlx.Tx) error
+	Insert(*sqlx.Tx) error
+	Remove(*sqlx.Tx) error
 }
 
 type Province struct {
@@ -26,11 +27,11 @@ type Province struct {
 	CountryCode int64  `db:"country_code" json:"-"`
 }
 
-func New() Province {
-	return Province{}
+func NewProvince() Provincer {
+	return &Province{}
 }
 
-func GetProvince(code int64) (province Province, err error) {
+func (p *Province) GetProvince(code int64) (province Province, err error) {
 	db := database.DB
 
 	//validate parameter
@@ -41,8 +42,9 @@ func GetProvince(code int64) (province Province, err error) {
 	var queryBuffer bytes.Buffer
 	queryBuffer.WriteString("SELECT province_code, province_name FROM province WHERE province_code = $1 LIMIT 1")
 
-	err = db.Get(&province, queryBuffer.String(), code)
-	if err != nil {
+	query := db.Rebind(queryBuffer.String())
+	err = db.Get(&province, query, code)
+	if err != nil && err != sql.ErrNoRows {
 		log.Printf("[Province][GetProvince] error while querying : \n %v \n %v", queryBuffer.String(), err)
 	}
 	return
@@ -60,25 +62,30 @@ func (p *Province) GetProvinceList(page, limit int64, filter Province) (province
 
 	if limit > 0 {
 		queryBuffer.WriteString("OFFSET $3 LIMIT $4")
-		err = db.Select(&provinces, queryBuffer.String(), filter.CountryCode, filter.Name, page, limit)
+		query := db.Rebind(queryBuffer.String())
+		err = db.Select(&provinces, query, filter.CountryCode, filter.Name, page, limit)
 	} else {
-		err = db.Select(&provinces, queryBuffer.String(), filter.CountryCode, filter.Name)
+		query := db.Rebind(queryBuffer.String())
+		err = db.Select(&provinces, query, filter.CountryCode, filter.Name)
 	}
 
-	if err != nil {
+	if err != nil && err != sql.ErrNoRows {
 		log.Printf("[Province][GetProvinceList] error while querying : \n %v \n %v", queryBuffer.String(), err)
 	}
 	return provinces, nil
 }
 
-func (p *Province) Update(province Province, tx *sqlx.Stmt) error {
+// Update is ...
+func (p *Province) Update(tx *sqlx.Tx) error {
 	return nil
 }
 
-func (p *Province) Insert(province Province, tx *sqlx.Stmt) error {
+// Insert is ...
+func (p *Province) Insert(tx *sqlx.Tx) error {
 	return nil
 }
 
-func (p *Province) Remove(province Province, tx *sqlx.Stmt) error {
+// Remove is ...
+func (p *Province) Remove(tx *sqlx.Tx) error {
 	return nil
 }

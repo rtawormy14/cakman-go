@@ -20,24 +20,19 @@ type (
 	}
 
 	// Authentication is ...
-	Authentication struct{}
-)
-
-var (
-	auth authModel.Authenticator
+	AuthCtr struct{}
 )
 
 // NewAuthController is...
 func NewAuthController() AuthController {
-	auth = authModel.NewAuthenticator()
-
-	return &Authentication{}
+	return &AuthCtr{}
 }
 
 // Login is...
-func (a *Authentication) Login(username string, password string) (authModel.Authentication, error) {
+func (a *AuthCtr) Login(username string, password string) (authModel.Authentication, error) {
 	// TODO change to check on courier data
-	if username != "admin" || password != "password" {
+	courierObject, err := courier.AuthenticateCourier(username, password)
+	if err != nil {
 		return authModel.Authentication{}, errors.New("wrong username or password")
 	}
 	token := generateToken()
@@ -46,14 +41,14 @@ func (a *Authentication) Login(username string, password string) (authModel.Auth
 
 	//TODO fix courier id get from courier table
 	authData := authModel.Authentication{
-		CourierID:  1,
+		CourierID:  courierObject.ID,
 		ExpireTime: createTime.Add(duration),
 		CreateTime: createTime,
 		Token:      token,
 	}
 
 	// insert to session
-	err := auth.Insert(authData, nil)
+	err = auth.Insert(authData, nil)
 	if err != nil {
 		return authModel.Authentication{}, err
 	}
@@ -70,7 +65,7 @@ func (a *Authentication) Login(username string, password string) (authModel.Auth
 }
 
 // Logout is...
-func (a *Authentication) Logout(token string) (err error) {
+func (a *AuthCtr) Logout(token string) (err error) {
 	// Get Authentication Data
 	authData, err := auth.GetAuthenticationByToken(token)
 	if err != nil {
@@ -87,7 +82,7 @@ func (a *Authentication) Logout(token string) (err error) {
 }
 
 // IsAuthenticate is...
-func (a *Authentication) IsAuthenticate(token string) (authModel.Authentication, bool) {
+func (a *AuthCtr) IsAuthenticate(token string) (authModel.Authentication, bool) {
 	// Get Authentication Data
 	authData, err := auth.GetAuthenticationByToken(token)
 	if err != nil {

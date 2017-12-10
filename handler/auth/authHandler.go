@@ -11,7 +11,7 @@ import (
 
 type (
 	// LoginRequest is ...
-	LoginRequest struct {
+	loginRequest struct {
 		Username string `json:"username"`
 		Password string `json:"password"`
 	}
@@ -26,9 +26,11 @@ func init() {
 
 // Login is used for authenticate user
 func Login(ctx *gin.Context) {
-	auth = controller.NewAuthController()
+	if auth == nil {
+		auth = controller.NewAuthController()
+	}
 
-	var login LoginRequest
+	var login loginRequest
 	if err := ctx.ShouldBindJSON(&login); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -48,7 +50,9 @@ func Login(ctx *gin.Context) {
 
 // Logout is used for remove session authenticated user
 func Logout(ctx *gin.Context) {
-	auth = controller.NewAuthController()
+	if auth == nil {
+		auth = controller.NewAuthController()
+	}
 	token := ctx.GetHeader("token")
 	if token == "" {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "bad token request"})
