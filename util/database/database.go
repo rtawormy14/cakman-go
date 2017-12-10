@@ -9,10 +9,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
-// DB is global variable db state
-var DB *sqlx.DB
-
-const (
+var (
 	//host
 	host = "localhost"
 	// username
@@ -21,6 +18,9 @@ const (
 	dbPassword = "password"
 	// database
 	dbName = "cakman_db"
+
+	// DB Object
+	DB *sqlx.DB
 )
 
 func InitDB() {
