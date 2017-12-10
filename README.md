@@ -1,6 +1,6 @@
 # cakman-go
 
-This App is used for Fauzanofami Luthfi.
+This App is used for Fauzanofami Luthfi TA.
 
 Before run this app, Please import sql database in cakman_db.sql first onto your postgres DB.
 
