@@ -41,15 +41,15 @@ func (d *DeliveryCtr) GetDelivery(id int64) (deliveryObj deliveryModel.Delivery,
 }
 
 // GetDeliveryHistory is ...
-func (d *DeliveryCtr) GetDeliveryHistory(courierID int64, page int64, limit int64) (deliveries []deliveryModel.Delivery, err error) {
-	deliveries, err = delivery.GetDeliveryHistory(courierID, page, limit)
+func (d *DeliveryCtr) GetDeliveryHistory(page int64, limit int64, courierID int64) (deliveries []deliveryModel.Delivery, err error) {
+	deliveries, err = delivery.GetDeliveryHistory(page, limit, courierID)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 	for i := 0; i < len(deliveries); i++ {
 		orderObj, _ := order.GetOrder(deliveries[i].OrderID)
-		deliveries[i].Order = orderObj
+		deliveries[i].Order = &orderObj
 	}
 	return
 }
@@ -63,7 +63,7 @@ func (d *DeliveryCtr) GetDeliveryList(page int64, limit int64, filter deliveryMo
 	}
 	for i := 0; i < len(deliveries); i++ {
 		orderObj, _ := order.GetOrder(deliveries[i].OrderID)
-		deliveries[i].Order = orderObj
+		deliveries[i].Order = &orderObj
 	}
 	return
 }

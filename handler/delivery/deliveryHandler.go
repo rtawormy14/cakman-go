@@ -82,7 +82,7 @@ func GetDeliveryHistory(ctx *gin.Context) {
 		return
 	}
 
-	deliveries, err := deliveryCtr.GetDeliveryHistory(courierID, page, limit)
+	deliveries, err := deliveryCtr.GetDeliveryHistory(page, limit, courierID)
 	if err != nil {
 		log.Println(err)
 	}

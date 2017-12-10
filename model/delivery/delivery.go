@@ -39,9 +39,9 @@ type Delivery struct {
 	UpdateBy   int64     `db:"update_by" json:"update_by"`
 	UpdateTime time.Time `db:"update_time" json:"update_time"`
 
-	Courier courierModel.Courier `json:"courier,omitempty"`
-	Order   orderModel.Order     `json:"order,omitempty"`
-	History []History            `json:"history,omitempty"`
+	Courier *courierModel.Courier `json:"courier,omitempty"`
+	Order   *orderModel.Order     `json:"order,omitempty"`
+	History *[]History            `json:"history,omitempty"`
 }
 
 var (

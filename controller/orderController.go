@@ -53,14 +53,14 @@ func (c *OrderCtr) FindResi(resi string) (orderObj orderModel.Order, err error) 
 		if err != nil {
 			log.Println(err)
 		}
-		deliveryObj.Courier = courierObj
+		deliveryObj.Courier = &courierObj
 
 		// get delivery history informations
 		histories, err := history.GetHistory(deliveryObj.ID)
 		if err != nil {
 			log.Println(err)
 		}
-		deliveryObj.History = histories
+		deliveryObj.History = &histories
 	}
 	return
 }
