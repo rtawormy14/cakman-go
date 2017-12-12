@@ -29,7 +29,7 @@ func InitDB() {
 
 	dbinfo := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true",
 		dbUser, dbPassword, host, port, dbName)
-	log.Println(dbinfo)
+
 	var err error
 	DB, err = sqlx.Connect("mysql", dbinfo)
 	if err != nil {
