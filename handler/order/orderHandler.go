@@ -13,17 +13,21 @@ import (
 )
 
 var orderCtr controller.OrderController
+var authCtr controller.AuthController
 
 func init() {
 	if orderCtr == nil {
 		orderCtr = controller.NewOrderController()
+	}
+	if authCtr == nil {
+		authCtr = controller.NewAuthController()
 	}
 }
 
 // GetOrders will return a list of order.
 func GetOrders(ctx *gin.Context) {
 	//token is not used
-	page, limit, _ := handler.GetDefaultParam(ctx)
+	page, limit, token := handler.GetDefaultParam(ctx)
 
 	resi := ctx.Query("resi")
 
@@ -31,6 +35,11 @@ func GetOrders(ctx *gin.Context) {
 	if resi != "" {
 		GetOrderDetail(ctx)
 	} else {
+		if _, ok := authCtr.IsAuthenticate(token); !ok {
+			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "token is expired"})
+			return
+		}
+
 		orders, err := orderCtr.GetOrderList(page, limit, order.Order{})
 		if err != nil {
 			log.Println(err)
