@@ -8,7 +8,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	//postgre implementation
-	_ "github.com/lib/pq"
+	_ "github.com/go-sql-driver/mysql"
 
 	"github.com/rtawormy14/cakman-go/util/database"
 )
@@ -43,7 +43,7 @@ func (c *Country) GetCountry(code int64) (country Country, err error) {
 	}
 
 	var queryBuffer bytes.Buffer
-	queryBuffer.WriteString("SELECT country_code, country_name FROM country WHERE country_code = $1 LIMIT 1")
+	queryBuffer.WriteString("SELECT country_code, country_name FROM country WHERE country_code = ? LIMIT 1")
 
 	query := db.Rebind(queryBuffer.String())
 	err = db.Get(&country, query, code)
@@ -60,10 +60,10 @@ func (c *Country) GetCountryList(page, limit int64, filter Country) (countries [
 	countries = make([]Country, 0)
 
 	var queryBuffer bytes.Buffer
-	queryBuffer.WriteString("SELECT country_code, country_name FROM country WHERE country_name ILIKE '%' || $1 || '%' ORDER BY country_name ASC ")
+	queryBuffer.WriteString("SELECT country_code, country_name FROM country WHERE country_name LIKE '%' || ? || '%' ORDER BY country_name ASC ")
 
 	if limit > 0 {
-		queryBuffer.WriteString("OFFSET $2 LIMIT $3")
+		queryBuffer.WriteString("OFFSET ? LIMIT ?")
 		query := db.Rebind(queryBuffer.String())
 		err = db.Select(&countries, query, filter.Name, page, limit)
 	} else {

@@ -9,7 +9,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	//postgre implementation
-	_ "github.com/lib/pq"
+	_ "github.com/go-sql-driver/mysql"
 
 	cityModel "github.com/rtawormy14/cakman-go/model/city"
 	countryModel "github.com/rtawormy14/cakman-go/model/country"
@@ -72,7 +72,7 @@ func (o *Order) FindResi(resi string) (order Order, err error) {
 	}
 
 	var queryBuffer bytes.Buffer
-	queryBuffer.WriteString("SELECT * FROM orders WHERE resi = $1 LIMIT 1")
+	queryBuffer.WriteString("SELECT * FROM orders WHERE resi = ? LIMIT 1")
 
 	query := db.Rebind(queryBuffer.String())
 	err = db.Get(&order, query, resi)
@@ -92,7 +92,7 @@ func (o *Order) GetOrder(orderID int64) (order Order, err error) {
 	}
 
 	var queryBuffer bytes.Buffer
-	queryBuffer.WriteString("SELECT * FROM orders WHERE id = $1 LIMIT 1")
+	queryBuffer.WriteString("SELECT * FROM orders WHERE id = ? LIMIT 1")
 
 	query := db.Rebind(queryBuffer.String())
 	err = db.Get(&order, query, orderID)
@@ -111,11 +111,11 @@ func (o *Order) GetOrderList(page int64, limit int64, filter Order) (orders []Or
 
 	var queryBuffer bytes.Buffer
 	queryBuffer.WriteString("SELECT * FROM orders ")
-	queryBuffer.WriteString("WHERE status = $1 ")
+	queryBuffer.WriteString("WHERE status = ? ")
 	queryBuffer.WriteString("ORDER BY create_time ASC ")
 
 	if limit > 0 {
-		queryBuffer.WriteString("OFFSET $2 LIMIT $3")
+		queryBuffer.WriteString("OFFSET ? LIMIT ?")
 		query := db.Rebind(queryBuffer.String())
 		err = db.Select(&orders, query, StatusWarehouse, page, limit)
 	} else {
@@ -147,16 +147,16 @@ func (o *Order) Update(order Order, tx *sqlx.Tx) (err error) {
 
 	query := `UPDATE orders 
 				SET 
-					consignee=$1, 
-					phone=$2, 
-					status=$3, 
-					address=$4, 
-					country_code=$5, 
-					province_code=$6,  
-					city_code=$7,
-					update_by=$8, 
-					update_time=$9 
-				WHERE id=$10`
+					consignee=?, 
+					phone=?, 
+					status=?, 
+					address=?, 
+					country_code=?, 
+					province_code=?,  
+					city_code=?,
+					update_by=?, 
+					update_time=?
+				WHERE id=?`
 	query = tx.Rebind(query)
 	tx.MustExec(query, order.Consignee, order.Phone, order.Status, order.Address, order.CountryID, order.ProvinceID, order.CityID, order.UpdateBy, time.Now(), order.ID)
 

@@ -9,7 +9,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	//postgre implementation
-	_ "github.com/lib/pq"
+	_ "github.com/go-sql-driver/mysql"
 
 	courierModel "github.com/rtawormy14/cakman-go/model/courier"
 	orderModel "github.com/rtawormy14/cakman-go/model/order"
@@ -75,7 +75,7 @@ func (d *Delivery) GetDelivery(deliveryID int64) (delivery Delivery, err error) 
 	}
 
 	var queryBuffer bytes.Buffer
-	queryBuffer.WriteString("SELECT * FROM delivery WHERE id = $1 LIMIT 1")
+	queryBuffer.WriteString("SELECT * FROM delivery WHERE id = ? LIMIT 1")
 
 	query := db.Rebind(queryBuffer.String())
 	err = db.Get(&delivery, query, deliveryID)
@@ -95,7 +95,7 @@ func (d *Delivery) GetDeliveryByOrderID(orderID int64) (delivery Delivery, err e
 	}
 
 	var queryBuffer bytes.Buffer
-	queryBuffer.WriteString("SELECT * FROM delivery WHERE order_id = $1 AND status IN($2,$3) LIMIT 1")
+	queryBuffer.WriteString("SELECT * FROM delivery WHERE order_id = ? AND status IN(?,?) LIMIT 1")
 
 	query := db.Rebind(queryBuffer.String())
 	err = db.Get(&delivery, query, orderID, StatusPickup, StatusFinish)
@@ -113,11 +113,11 @@ func (d *Delivery) GetDeliveryHistory(page int64, limit int64, courierID int64) 
 
 	var queryBuffer bytes.Buffer
 	queryBuffer.WriteString("SELECT * FROM delivery ")
-	queryBuffer.WriteString("WHERE courier_id = $1 AND status IN($2,$3) ")
+	queryBuffer.WriteString("WHERE courier_id = ? AND status IN(?,?) ")
 	queryBuffer.WriteString("ORDER BY update_time DESC ")
 
 	if limit > 0 {
-		queryBuffer.WriteString("OFFSET $4 LIMIT $5")
+		queryBuffer.WriteString("OFFSET ? LIMIT ?")
 		query := db.Rebind(queryBuffer.String())
 		err = db.Select(&deliveries, query, courierID, StatusCancel, StatusFinish, page, limit)
 	} else {
@@ -140,11 +140,11 @@ func (d *Delivery) GetDeliveryList(page int64, limit int64, filter Delivery) (de
 
 	var queryBuffer bytes.Buffer
 	queryBuffer.WriteString("SELECT * FROM delivery ")
-	queryBuffer.WriteString("WHERE courier_id = $1 AND status = $2 ")
+	queryBuffer.WriteString("WHERE courier_id = ? AND status = ? ")
 	queryBuffer.WriteString("ORDER BY create_time ASC ")
 
 	if limit > 0 {
-		queryBuffer.WriteString("OFFSET $3 LIMIT $4")
+		queryBuffer.WriteString("OFFSET ? LIMIT ?")
 		query := db.Rebind(queryBuffer.String())
 		err = db.Select(&deliveries, query, filter.CourierID, StatusPickup, page, limit)
 	} else {
@@ -168,11 +168,16 @@ func (d *Delivery) Insert(delivery Delivery, tx *sqlx.Tx) (deliveryObj Delivery,
 		commitNow = true
 	}
 
-	query := "INSERT INTO delivery (courier_id,order_id,status,note,create_by,create_time) VALUES ($1,$2,$3,$4,$5,$6) returning id"
+	query := "INSERT INTO delivery (courier_id,order_id,status,note,create_by,create_time) VALUES (?,?,?,?,?,?)"
 	query = tx.Rebind(query)
 
 	var id int64
-	tx.QueryRow(query, delivery.CourierID, delivery.OrderID, delivery.Status, delivery.Note, delivery.CreateBy, delivery.CreateTime).Scan(&id)
+	res, err := tx.Exec(query, delivery.CourierID, delivery.OrderID, delivery.Status, delivery.Note, delivery.CreateBy, delivery.CreateTime)
+
+	if res != nil {
+		id, err = res.LastInsertId()
+	}
+	log.Println(id)
 	if commitNow {
 		err = tx.Commit()
 		if err != nil {
@@ -197,11 +202,11 @@ func (d *Delivery) Update(delivery Delivery, tx *sqlx.Tx) (err error) {
 
 	query := `UPDATE delivery 
 				SET 
-					status=$1, 
-					note=$2, 
-					update_by=$3, 
-					update_time=$4 
-				WHERE id=$5`
+					status=?, 
+					note=?, 
+					update_by=?, 
+					update_time=?
+				WHERE id=?`
 	query = tx.Rebind(query)
 	tx.MustExec(query, delivery.Status, delivery.Note, delivery.UpdateBy, time.Now(), delivery.ID)
 
@@ -224,7 +229,7 @@ func (d *Delivery) Remove(delivery Delivery, tx *sqlx.Tx) (err error) {
 		commitNow = true
 	}
 
-	query := "DELETE FROM delivery WHERE id = $1"
+	query := "DELETE FROM delivery WHERE id = ?"
 	query = tx.Rebind(query)
 	tx.MustExec(query, delivery.ID)
 

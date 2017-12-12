@@ -9,7 +9,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/rtawormy14/cakman-go/util/database"
 	//postgre implementation
-	_ "github.com/lib/pq"
+	_ "github.com/go-sql-driver/mysql"
 )
 
 // Provincer is Interface for province
@@ -40,7 +40,7 @@ func (p *Province) GetProvince(code int64) (province Province, err error) {
 	}
 
 	var queryBuffer bytes.Buffer
-	queryBuffer.WriteString("SELECT province_code, province_name FROM province WHERE province_code = $1 LIMIT 1")
+	queryBuffer.WriteString("SELECT province_code, province_name FROM province WHERE province_code = ? LIMIT 1")
 
 	query := db.Rebind(queryBuffer.String())
 	err = db.Get(&province, query, code)
@@ -57,11 +57,11 @@ func (p *Province) GetProvinceList(page, limit int64, filter Province) (province
 
 	var queryBuffer bytes.Buffer
 	queryBuffer.WriteString("SELECT province_code, province_name FROM province ")
-	queryBuffer.WriteString("WHERE country_code = $1 AND province_name ILIKE '%' || $2 || '%' ")
+	queryBuffer.WriteString("WHERE country_code = ? AND province_name LIKE '%' || ? || '%' ")
 	queryBuffer.WriteString("ORDER BY province_name ASC ")
 
 	if limit > 0 {
-		queryBuffer.WriteString("OFFSET $3 LIMIT $4")
+		queryBuffer.WriteString("OFFSET ? LIMIT ?")
 		query := db.Rebind(queryBuffer.String())
 		err = db.Select(&provinces, query, filter.CountryCode, filter.Name, page, limit)
 	} else {

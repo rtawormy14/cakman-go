@@ -9,7 +9,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	//postgre implementation
-	_ "github.com/lib/pq"
+	_ "github.com/go-sql-driver/mysql"
 
 	"github.com/rtawormy14/cakman-go/util/database"
 )
@@ -42,7 +42,7 @@ func (d *History) GetHistory(deliveryID int64) (histories []History, err error) 
 
 	var queryBuffer bytes.Buffer
 	queryBuffer.WriteString("SELECT * FROM delivery_history ")
-	queryBuffer.WriteString("WHERE delivery_id = $1 ")
+	queryBuffer.WriteString("WHERE delivery_id = ? ")
 	queryBuffer.WriteString("ORDER BY create_time DESC ")
 
 	query := db.Rebind(queryBuffer.String())
@@ -64,7 +64,7 @@ func (d *History) Insert(history History, tx *sqlx.Tx) (err error) {
 		commitNow = true
 	}
 
-	query := "INSERT INTO delivery_history (delivery_id,status,note,create_time) VALUES ($1,$2,$3,$4)"
+	query := "INSERT INTO delivery_history (delivery_id,status,note,create_time) VALUES (?,?,?,?)"
 	query = tx.Rebind(query)
 	tx.MustExec(query, history.DeliveryID, history.Status, history.Note, history.CreateTime)
 

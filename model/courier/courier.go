@@ -9,7 +9,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	//postgre implementation
-	_ "github.com/lib/pq"
+	_ "github.com/go-sql-driver/mysql"
 
 	"github.com/rtawormy14/cakman-go/util/database"
 )
@@ -56,7 +56,7 @@ func (c *Courier) GetCourier(code int64) (courier Courier, err error) {
 	}
 
 	var queryBuffer bytes.Buffer
-	queryBuffer.WriteString("SELECT * FROM courier WHERE id = $1 LIMIT 1")
+	queryBuffer.WriteString("SELECT * FROM courier WHERE id = ? LIMIT 1")
 
 	query := db.Rebind(queryBuffer.String())
 	err = db.Get(&courier, query, code)
@@ -78,7 +78,7 @@ func (c *Courier) AuthenticateCourier(username string, password string) (courier
 	}
 
 	var queryBuffer bytes.Buffer
-	queryBuffer.WriteString("SELECT * FROM courier WHERE username = $1 AND password = $2 LIMIT 1")
+	queryBuffer.WriteString("SELECT * FROM courier WHERE username = ? AND password = ? LIMIT 1")
 
 	query := db.Rebind(queryBuffer.String())
 	err = db.Get(&courier, query, username, password)
@@ -97,7 +97,7 @@ func (c *Courier) Insert(courier Courier, tx *sqlx.Tx) (err error) {
 		commitNow = true
 	}
 
-	query := "INSERT INTO courier (username,password,name,phone,email,create_by,create_time) VALUES ($1,$2,$3,$4,$5,$6,$7)"
+	query := "INSERT INTO courier (username,password,name,phone,email,create_by,create_time) VALUES (?,?,?,?,?,?,?)"
 	query = tx.Rebind(query)
 	tx.MustExec(query, courier.Username, courier.Password, courier.Name, courier.Phone, courier.Email, courier.CreateBy, courier.CreateTime)
 
@@ -120,7 +120,7 @@ func (c *Courier) UpdateLocation(courier Courier, tx *sqlx.Tx) (err error) {
 		commitNow = true
 	}
 
-	query := "UPDATE courier SET longitude=$1, lattitude=$2, update_position_time=$3 WHERE id=$4"
+	query := "UPDATE courier SET longitude=?, lattitude=?, update_position_time=? WHERE id=?"
 	query = tx.Rebind(query)
 	tx.MustExec(query, courier.Longitude, courier.Lattitude, courier.LocUpdateTime, courier.ID)
 
@@ -143,7 +143,7 @@ func (c *Courier) Update(courier Courier, tx *sqlx.Tx) (err error) {
 		commitNow = true
 	}
 
-	query := "UPDATE courier SET username=$1, password=$2, name=$3, phone=$4, email=$5, update_by=$6, update_time=$7 WHERE id=$8"
+	query := "UPDATE courier SET username=?, password=?, name=?, phone=?, email=?, update_by=?, update_time=? WHERE id=?"
 	query = tx.Rebind(query)
 	tx.MustExec(query, courier.Username, courier.Password, courier.Name, courier.Phone, courier.Email, courier.UpdateBy, courier.UpdateTime, courier.ID)
 
@@ -166,7 +166,7 @@ func (c *Courier) Remove(courier Courier, tx *sqlx.Tx) (err error) {
 		commitNow = true
 	}
 
-	query := "DELETE FROM courier WHERE id=$1"
+	query := "DELETE FROM courier WHERE id=?"
 	query = tx.Rebind(query)
 	tx.MustExec(query, courier.ID)
 

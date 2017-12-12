@@ -9,7 +9,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/rtawormy14/cakman-go/util/database"
 	//postgre implementation
-	_ "github.com/lib/pq"
+	_ "github.com/go-sql-driver/mysql"
 )
 
 // Citier interface
@@ -43,7 +43,7 @@ func (p *City) GetCity(code int64) (city City, err error) {
 	}
 
 	var queryBuffer bytes.Buffer
-	queryBuffer.WriteString("SELECT city_code, city_name FROM city WHERE city_code = $1 LIMIT 1")
+	queryBuffer.WriteString("SELECT city_code, city_name FROM city WHERE city_code = ? LIMIT 1")
 
 	query := db.Rebind(queryBuffer.String())
 	err = db.Get(&city, query, code)
@@ -61,11 +61,11 @@ func (p *City) GetCityList(page, limit int64, filter City) (cities []City, err e
 
 	var queryBuffer bytes.Buffer
 	queryBuffer.WriteString("SELECT city_code, city_name FROM city ")
-	queryBuffer.WriteString("WHERE province_code = $1 AND city_name ILIKE '%' || $2 || '%' ")
+	queryBuffer.WriteString("WHERE province_code = ? AND city_name LIKE '%' || ? || '%' ")
 	queryBuffer.WriteString("ORDER BY city_name ASC ")
 
 	if limit > 0 {
-		queryBuffer.WriteString("OFFSET $3 LIMIT $4")
+		queryBuffer.WriteString("OFFSET ? LIMIT ?")
 		query := db.Rebind(queryBuffer.String())
 		err = db.Select(&cities, query, filter.ProvinceCode, filter.Name, page, limit)
 	} else {

@@ -6,28 +6,32 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	//postgres implementation
-	_ "github.com/lib/pq"
+	_ "github.com/go-sql-driver/mysql"
 )
 
 var (
 	//host
-	host = "localhost"
+	host = "172.25.230.81"
 	// username
-	dbUser = "cakman"
+	dbUser = "apps"
 	// password
-	dbPassword = "password"
+	dbPassword = "Apps*2013"
 	// database
 	dbName = "cakman_db"
+
+	port = "3306"
 
 	// DB Object
 	DB *sqlx.DB
 )
 
 func InitDB() {
-	dbinfo := fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=disable",
-		host, dbUser, dbPassword, dbName)
+
+	dbinfo := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true",
+		dbUser, dbPassword, host, port, dbName)
+	log.Println(dbinfo)
 	var err error
-	DB, err = sqlx.Connect("postgres", dbinfo)
+	DB, err = sqlx.Connect("mysql", dbinfo)
 	if err != nil {
 		log.Panic(err)
 	}

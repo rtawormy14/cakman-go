@@ -8,8 +8,9 @@ import (
 	"log"
 	"time"
 
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
-	_ "github.com/lib/pq"
+
 	"github.com/rtawormy14/cakman-go/util/database"
 )
 
@@ -47,7 +48,7 @@ func (a *Authentication) GetAuthentication(id int64) (auth Authentication, err e
 	}
 
 	var queryBuffer bytes.Buffer
-	queryBuffer.WriteString("SELECT id, courier_id, token, create_time, expire_time FROM session WHERE id = $1 LIMIT 1")
+	queryBuffer.WriteString("SELECT id, courier_id, token, create_time, expire_time FROM session WHERE id = ? LIMIT 1")
 
 	query := db.Rebind(queryBuffer.String())
 	err = db.Get(&auth, query, id)
@@ -69,7 +70,7 @@ func (a *Authentication) GetAuthenticationByToken(token string) (auth Authentica
 	}
 
 	var queryBuffer bytes.Buffer
-	queryBuffer.WriteString("SELECT id, courier_id, token, create_time, expire_time FROM session WHERE token = $1 LIMIT 1")
+	queryBuffer.WriteString("SELECT id, courier_id, token, create_time, expire_time FROM session WHERE token = ? LIMIT 1")
 
 	query := db.Rebind(queryBuffer.String())
 	err = db.Get(&auth, query, token)
@@ -91,7 +92,7 @@ func (a *Authentication) Insert(auth Authentication, tx *sqlx.Tx) (err error) {
 		commitNow = true
 	}
 
-	query := "INSERT INTO session (courier_id, token, expire_time, create_time) VALUES ($1,$2,$3,$4)"
+	query := "INSERT INTO session (courier_id, token, expire_time, create_time) VALUES (?,?,?,?)"
 	query = db.Rebind(query)
 	db.MustExec(query, auth.CourierID, auth.Token, auth.ExpireTime, auth.CreateTime)
 
@@ -114,7 +115,7 @@ func (a *Authentication) Update(auth Authentication, tx *sqlx.Tx) (err error) {
 		commitNow = true
 	}
 
-	query := "UPDATE session SET courier_id = $1, token = $2, expire_time = $3, create_time = $4 WHERE id = $5"
+	query := "UPDATE session SET courier_id = ?, token = ?, expire_time = ?, create_time = ? WHERE id = ?"
 	query = db.Rebind(query)
 	db.MustExec(query, auth.CourierID, auth.Token, auth.ExpireTime, auth.CreateTime, auth.ID)
 
@@ -137,7 +138,7 @@ func (a *Authentication) Remove(auth Authentication, tx *sqlx.Tx) (err error) {
 		commitNow = true
 	}
 
-	query := "DELETE FROM session WHERE id = $1"
+	query := "DELETE FROM session WHERE id = ?"
 	query = db.Rebind(query)
 	db.MustExec(query, auth.ID)
 
