@@ -177,7 +177,6 @@ func (d *Delivery) Insert(delivery Delivery, tx *sqlx.Tx) (deliveryObj Delivery,
 	if res != nil {
 		id, err = res.LastInsertId()
 	}
-	log.Println(id)
 	if commitNow {
 		err = tx.Commit()
 		if err != nil {
