@@ -3,7 +3,7 @@ package controller
 import (
 	"log"
 
-	orderModel "github.com/rtawormy14/cakman-go/model/order"
+	orderModel "github.com/rtawormy14/cakman-go/model/delivery"
 )
 
 type (
@@ -40,27 +40,29 @@ func (c *OrderCtr) FindResi(resi string) (orderObj orderModel.Order, err error) 
 	orderObj.City = cityObj
 
 	// Add detail delivery order -> when order status is not in WAREHOUSE
-	if orderObj.Status != orderModel.StatusWarehouse {
+	if orderObj.Status != orderModel.StatusOrderWarehouse {
 		//get delivery information
 		deliveryObj, err := delivery.GetDeliveryByOrderID(orderObj.ID)
 		if err != nil {
-			log.Println(err)
+			log.Println("[OrderController][FindResi] error while getting delivery order ->", err)
 			return orderObj, err
 		}
 
 		// get courier information
 		courierObj, err := courier.GetCourier(deliveryObj.CourierID)
 		if err != nil {
-			log.Println(err)
+			log.Println("[OrderController][FindResi] error while getting Courier Information ->", err)
 		}
 		deliveryObj.Courier = &courierObj
 
 		// get delivery history informations
 		histories, err := history.GetHistory(deliveryObj.ID)
 		if err != nil {
-			log.Println(err)
+			log.Println("[OrderController][FindResi] error while getting delivery history ->", err)
 		}
 		deliveryObj.History = &histories
+
+		orderObj.Delivery = deliveryObj
 	}
 	return
 }

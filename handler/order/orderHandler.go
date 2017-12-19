@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rtawormy14/cakman-go/controller"
 	"github.com/rtawormy14/cakman-go/handler"
-	"github.com/rtawormy14/cakman-go/model/order"
+	"github.com/rtawormy14/cakman-go/model/delivery"
 )
 
 var orderCtr controller.OrderController
@@ -40,7 +40,7 @@ func GetOrders(ctx *gin.Context) {
 			return
 		}
 
-		orders, err := orderCtr.GetOrderList(page, limit, order.Order{})
+		orders, err := orderCtr.GetOrderList(page, limit, delivery.Order{})
 		if err != nil {
 			log.Println(err)
 		}

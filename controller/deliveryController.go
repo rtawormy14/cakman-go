@@ -6,7 +6,6 @@ import (
 	"time"
 
 	deliveryModel "github.com/rtawormy14/cakman-go/model/delivery"
-	orderModel "github.com/rtawormy14/cakman-go/model/order"
 	"github.com/rtawormy14/cakman-go/util/database"
 )
 
@@ -75,10 +74,10 @@ func (d *DeliveryCtr) PickupDelivery(courierID int64, orderID int64) (err error)
 		log.Println("[Delivery][PickupDelivery] error when get order information : ", err)
 		return
 	}
-	if orderObj.Status == orderModel.StatusInprogress {
+	if orderObj.Status == deliveryModel.StatusOrderInprogress {
 		return errors.New("You cannot pickup order that has been picked up by another courier")
 	}
-	if orderObj.Status == orderModel.StatusFinish {
+	if orderObj.Status == deliveryModel.StatusOrderFinish {
 		return errors.New("You cannot pickup order that has been delivered")
 	}
 
@@ -100,7 +99,7 @@ func (d *DeliveryCtr) PickupDelivery(courierID int64, orderID int64) (err error)
 		return
 	}
 
-	orderObj.Status = orderModel.StatusInprogress
+	orderObj.Status = deliveryModel.StatusOrderInprogress
 	err = order.Update(orderObj, tx)
 	if err != nil {
 		log.Println("[Delivery][PickupDelivery] error when update order status : ", err)
@@ -161,11 +160,11 @@ func (d *DeliveryCtr) UpdateDelivery(newData deliveryModel.Delivery) (err error)
 		return
 	}
 	if newData.Status == deliveryModel.StatusCancel {
-		orderObj.Status = orderModel.StatusWarehouse
+		orderObj.Status = deliveryModel.StatusOrderWarehouse
 	} else if newData.Status == deliveryModel.StatusFinish {
-		orderObj.Status = orderModel.StatusFinish
+		orderObj.Status = deliveryModel.StatusFinish
 	} else if newData.Status == deliveryModel.StatusPickup {
-		orderObj.Status = orderModel.StatusInprogress
+		orderObj.Status = deliveryModel.StatusOrderInprogress
 	}
 	err = order.Update(orderObj, tx)
 	if err != nil {

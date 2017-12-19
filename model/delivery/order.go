@@ -1,4 +1,4 @@
-package order
+package delivery
 
 import (
 	"bytes"
@@ -46,15 +46,17 @@ type Order struct {
 	Country  countryModel.Country   `json:"country,omitempty"`
 	Province provinceModel.Province `json:"province,omitempty"`
 	City     cityModel.City         `json:"city,omitempty"`
+
+	Delivery Delivery `json:"delivery_order,omitempty"`
 }
 
 const (
 	// StatusWarehouse means order is not yet picked up by courier, and it still in warehouse
-	StatusWarehouse = "WAREHOUSE"
+	StatusOrderWarehouse = "WAREHOUSE"
 	// StatusInprogress means order is already picked up by courier and on his way to delivering order
-	StatusInprogress = "INPROGRESS"
+	StatusOrderInprogress = "INPROGRESS"
 	// StatusFinish means order is already delivered successfully
-	StatusFinish = "FINISH"
+	StatusOrderFinish = "FINISH"
 )
 
 // NewOrder is ...
@@ -117,10 +119,10 @@ func (o *Order) GetOrderList(page int64, limit int64, filter Order) (orders []Or
 	if limit > 0 {
 		queryBuffer.WriteString("OFFSET ? LIMIT ?")
 		query := db.Rebind(queryBuffer.String())
-		err = db.Select(&orders, query, StatusWarehouse, page, limit)
+		err = db.Select(&orders, query, StatusOrderWarehouse, page, limit)
 	} else {
 		query := db.Rebind(queryBuffer.String())
-		err = db.Select(&orders, query, StatusWarehouse)
+		err = db.Select(&orders, query, StatusOrderWarehouse)
 	}
 
 	if err != nil && err != sql.ErrNoRows {

@@ -6,7 +6,6 @@ import (
 	countryModel "github.com/rtawormy14/cakman-go/model/country"
 	courierModel "github.com/rtawormy14/cakman-go/model/courier"
 	deliveryModel "github.com/rtawormy14/cakman-go/model/delivery"
-	orderModel "github.com/rtawormy14/cakman-go/model/order"
 	provinceModel "github.com/rtawormy14/cakman-go/model/province"
 )
 
@@ -16,7 +15,7 @@ var (
 	city     cityModel.Citier
 	auth     authModel.Authenticator
 	courier  courierModel.Courierer
-	order    orderModel.Orderer
+	order    deliveryModel.Orderer
 	delivery deliveryModel.Deliverier
 	history  deliveryModel.Historier
 )
@@ -28,7 +27,7 @@ func InitController() {
 	city = cityModel.NewCity()
 	auth = authModel.NewAuthentication()
 	courier = courierModel.NewCourier()
-	order = orderModel.NewOrder()
+	order = deliveryModel.NewOrder()
 	delivery = deliveryModel.NewDelivery()
 	history = deliveryModel.NewHistory()
 }

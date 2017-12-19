@@ -12,7 +12,6 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 
 	courierModel "github.com/rtawormy14/cakman-go/model/courier"
-	orderModel "github.com/rtawormy14/cakman-go/model/order"
 	"github.com/rtawormy14/cakman-go/util/database"
 )
 
@@ -40,7 +39,7 @@ type Delivery struct {
 	UpdateTime time.Time `db:"update_time" json:"update_time"`
 
 	Courier *courierModel.Courier `json:"courier,omitempty"`
-	Order   *orderModel.Order     `json:"order,omitempty"`
+	Order   *Order                `json:"order,omitempty"`
 	History *[]History            `json:"history,omitempty"`
 }
 
