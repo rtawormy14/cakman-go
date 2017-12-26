@@ -94,10 +94,10 @@ func (d *Delivery) GetDeliveryByOrderID(orderID int64) (delivery Delivery, err e
 	}
 
 	var queryBuffer bytes.Buffer
-	queryBuffer.WriteString("SELECT * FROM delivery WHERE order_id = ? AND status IN(?,?) LIMIT 1")
+	queryBuffer.WriteString("SELECT * FROM delivery WHERE order_id = ? order by create_time desc LIMIT 1")
 
 	query := db.Rebind(queryBuffer.String())
-	err = db.Get(&delivery, query, orderID, StatusPickup, StatusFinish)
+	err = db.Get(&delivery, query, orderID)
 	if err != nil && err != sql.ErrNoRows {
 		log.Printf("[Delivery][GetDelivery] error while querying : \n %v \n %v", queryBuffer.String(), err)
 	}
