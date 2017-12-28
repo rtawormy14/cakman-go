@@ -72,12 +72,8 @@ func (c *CourierCtr) UpdateLocation(courierID int64, longitude, lattitude float6
 		return err
 	}
 
-	if longitude > 0 {
-		courierObject.Longitude = longitude
-	}
-	if lattitude > 0 {
-		courierObject.Lattitude = lattitude
-	}
+	courierObject.Longitude = longitude
+	courierObject.Lattitude = lattitude
 
 	courierObject.LocUpdateTime = time.Now()
 

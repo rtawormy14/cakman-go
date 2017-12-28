@@ -123,7 +123,6 @@ func (c *Courier) UpdateLocation(courier Courier, tx *sqlx.Tx) (err error) {
 	query := "UPDATE courier SET longitude=?, lattitude=?, update_position_time=? WHERE id=?"
 	query = tx.Rebind(query)
 	tx.MustExec(query, courier.Longitude, courier.Lattitude, courier.LocUpdateTime, courier.ID)
-
 	if commitNow {
 		err = tx.Commit()
 		if err != nil {
